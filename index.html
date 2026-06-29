@@ -198,7 +198,6 @@
     <header class="relative overflow-hidden bg-gradient-to-b from-mc-medio to-mc-fondo pt-12 pb-8 px-4 border-b border-mc-bloque/30">
         <div class="max-w-4xl mx-auto text-center relative z-10 anim-entrada">
             <div class="relative inline-block mb-5">
-                <!-- ✅ AQUÍ YA ESTÁ PARA .JPG -->
                 <img id="fotoPerfil" src="creador.jpg" alt="Tu Foto" 
                      class="w-32 h-32 rounded-full object-cover border-4 border-mc-dorado shadow-dorado"
                      onerror="this.src='https://via.placeholder.com/128?text=Constructor'">
@@ -272,7 +271,7 @@
                         <i class="fa fa-eye-slash"></i>
                     </span>
                 </div>
-                <button onclick="guardarNuevaClave()" class="bg-mc-dorado hover:bg-amber-500 w-full py-2.5 rounded-md text-black font-semibold transition-colors">Guardar Contraseña</button>
+                <button onclick="guardarNuevaClave()" class="bg-mc-dorado hover:bg-amber-500 w-full py-2.5 rounded-md text-black font-semibold transition-colors">Guardar Configuración</button>
                 
                 <div class="mt-4 p-3 bg-mc-medio/50 rounded text-xs text-gray-300 border border-mc-bloque/20">
                     📂 <b>Organización de archivos:</b><br>
@@ -311,186 +310,207 @@
     </div>
 
     <script>
-        let CLAVE_SECRETA = localStorage.getItem('claveConstructor') || 'mcpro2026';
-        let configuracion = JSON.parse(localStorage.getItem('datosConstructor')) || { nombre: "Constructor Profesional" };
-        let misProyectos = JSON.parse(localStorage.getItem('mapasCreados')) || [];
+        // 🗄️ CONFIGURACIÓN DE BASE DE DATOS EN LA NUBE
+        const DB_URL = "https://api.jsonbin.io/v3/b/667f6a2ce41b4d19c9e8d8c0";
+        const DB_KEY = "$2a$10$0TjRjRjRjRjRjRjRjRjRuOe5Xc8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X7Y8Z9";
 
+        let configuracion = { clave: "mcpro2026", nombre: "Constructor Profesional" };
+        let misProyectos = [];
+
+        // 🚀 Cargar datos al iniciar
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('nombreConstructor').textContent = configuracion.nombre;
-            actualizarVistaGeneral();
+            cargarDatosDesdeNube();
             document.getElementById('btnAdmin').addEventListener('click', () => {
                 document.getElementById('modalAcceso').classList.remove('oculto');
             });
         });
 
-        function cambiarVistaClave(idCampo, boton) {
-            const campo = document.getElementById(idCampo);
-            const icono = boton.querySelector('i');
-            campo.type = campo.type === 'password' ? 'text' : 'password';
-            icono.className = campo.type === 'password' ? 'fa fa-eye-slash' : 'fa fa-eye';
-        }
-
-        function validarClave() {
-            const claveIngresada = document.getElementById('claveIngreso').value.trim();
-            if(claveIngresada === CLAVE_SECRETA){
-                document.getElementById('modalAcceso').classList.add('oculto');
-                document.getElementById('panelAdmin').classList.remove('oculto');
-                document.getElementById('editarNombrePerfil').value = configuracion.nombre;
-                document.getElementById('nuevaClaveNueva').value = CLAVE_SECRETA;
-            } else {
-                alert('❌ Contraseña incorrecta');
-                document.getElementById('claveIngreso').value = '';
+        // 📥 Obtener datos de la nube
+        async function cargarDatosDesdeNube() {
+            try {
+                const respuesta = await fetch(DB_URL, {
+                    headers: { "X-Master-Key": DB_KEY }
+                });
+                const datos = await respuesta.json();
+                if (datos.record) {
+                    configuracion = datos.record.config || configuracion;
+                    misProyectos = datos.record.proyectos || [];
+                }
+            } catch (err) {
+                console.log("Iniciando con datos vacíos");
+                await guardarDatosEnNube();
             }
-        }
-
-        function cerrarModalClave() { 
-            document.getElementById('modalAcceso').classList.add('oculto'); 
-            document.getElementById('claveIngreso').value = '';
-        }
-
-        function cerrarPanel() { 
-            document.getElementById('panelAdmin').classList.add('oculto'); 
-            guardarCambios();
-        }
-
-        function guardarNuevaClave() {
-            const nuevaClave = document.getElementById('nuevaClaveNueva').value.trim();
-            if(!nuevaClave) return alert('⚠️ Escribe una contraseña válida');
-            CLAVE_SECRETA = nuevaClave; 
-            localStorage.setItem('claveConstructor', nuevaClave);
-            alert('✅ Contraseña guardada correctamente');
-        }
-
-        function agregarProyecto() {
-            const nombresArchivos = document.getElementById('campoArchivosImagenes').value
-                .split(',')
-                .map(nombre => nombre.trim())
-                .filter(nombre => nombre);
-            
-            if(nombresArchivos.length === 0) return alert('⚠️ Agrega al menos una imagen');
-            
-            const rutasCompletas = nombresArchivos.map(nombre => `imagenes/${nombre}`);
-
-            const datos = {
-                id: Date.now(),
-                nombre: document.getElementById('campoNombreMapa').value.trim(),
-                ficha: document.getElementById('campoDatosTecnicos').value.trim(),
-                descarga: document.getElementById('campoEnlaceDescarga').value.trim(),
-                imagenes: rutasCompletas
-            };
-
-            if(!datos.nombre || !datos.descarga) return alert('⚠️ Completa el nombre y el enlace de descarga');
-            
-            misProyectos.unshift(datos);
-            guardarCambios();
-            actualizarVistaGeneral();
-            limpiarFormulario();
-            alert('✅ Proyecto agregado correctamente');
-        }
-
-        function borrarProyecto(id) {
-            if(confirm('¿Eliminar este mapa? No se puede deshacer')){
-                misProyectos = misProyectos.filter(p => p.id !== id);
-                guardarCambios(); 
-                actualizarVistaGeneral();
-            }
-        }
-
-        function guardarCambios() {
-            configuracion.nombre = document.getElementById('editarNombrePerfil').value.trim() || "Constructor Profesional";
-            localStorage.setItem('datosConstructor', JSON.stringify(configuracion));
-            localStorage.setItem('mapasCreados', JSON.stringify(misProyectos));
             document.getElementById('nombreConstructor').textContent = configuracion.nombre;
+            actualizarVistaGeneral();
         }
 
-// ✅ FUNCIÓN COMPLETA QUE FALTABA
-        function actualizarVistaGeneral() {
-            const contenedor = document.getElementById('contenedorProyectos');
-            const avisoVacio = document.getElementById('sinMapas');
-            contenedor.innerHTML = '';
-
-            if(misProyectos.length === 0){ 
-                avisoVacio.classList.remove('oculto'); 
-                document.getElementById('listaEliminar').innerHTML = '';
-                return; 
-            }
-            avisoVacio.classList.add('oculto');
-
-            misProyectos.forEach((proyecto, indice) => {
-                const tarjeta = document.createElement('article');
-                tarjeta.className = 'bg-mc-medio rounded-lg overflow-hidden shadow-lujo anim-entrada border border-mc-bloque/20';
-                tarjeta.style.animationDelay = `${indice * 0.18}s`;
-
-                tarjeta.innerHTML = `
-                <div class="contenedor-galeria">
-                    <div class="pista-imagenes" id="pista-${proyecto.id}">
-                        ${proyecto.imagenes.map(url => 
-                            `<img src="${url}" alt="${proyecto.nombre}" class="img-mapa" 
-                             onerror="this.src='https://via.placeholder.com/600x400?text=Imagen+no+encontrada'">`
-                        ).join('')}
-                    </div>
-                    ${proyecto.imagenes.length > 1 ? `
-                        <button class="btn-flecha left-2" onclick="desplazarGaleria(${proyecto.id}, -1)">‹</button>
-                        <button class="btn-flecha right-2" onclick="desplazarGaleria(${proyecto.id}, 1)">›</button>
-                        <div class="indicadores" id="puntos-${proyecto.id}">
-                            ${proyecto.imagenes.map((_,i)=>`<span class="punto ${i===0?'activo':''}"></span>`).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-
-                <div class="p-7">
-                    <h3 class="text-2xl font-bold text-center text-mc-dorado mb-5 resaltado font-minecraft">${proyecto.nombre}</h3>
-                    <div class="mb-6">
-                        ${proyecto.ficha.split('\n').filter(linea => linea.trim()).map(linea => 
-                            `<div class="etiqueta-dato">${linea}</div>`
-                        ).join('')}
-                    </div>
-                    <a href="${proyecto.descarga}" target="_blank" rel="noopener noreferrer" class="btn-descargar block text-center py-3.5 rounded-lg text-white font-bold text-lg">
-                        <i class="fa fa-download mr-2"></i> OBTENER MAPA
-                    </a>
-                </div>`;
-                contenedor.appendChild(tarjeta);
-            });
-
-            const listaBorrar = document.getElementById('listaEliminar'); 
-            listaBorrar.innerHTML = '<h4 class="text-sm font-semibold text-gray-300 mb-2">Proyectos guardados:</h4>';
-            misProyectos.forEach(p => {
-                listaBorrar.innerHTML += `
-                    <div class="bg-mc-fondo p-3 rounded flex justify-between items-center border border-mc-bloque/20">
-                        <span class="text-sm font-medium">${p.nombre}</span>
-                        <button onclick="borrarProyecto(${p.id})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-medium transition-colors">Eliminar</button>
-                    </div>`;
-            });
-        }
-
-        function desplazarGaleria(id, sentido) {
-            const pista = document.getElementById(`pista-${id}`);
-            const puntos = document.getElementById(`puntos-${id}`)?.children || [];
-            const anchoImg = pista.firstElementChild?.clientWidth || 0;
-            const totalImagenes = pista.children.length;
-            
-            if(anchoImg === 0 || totalImagenes <= 1) return;
-
-            let posActual = Math.abs(parseFloat(pista.style.transform?.replace(/[^0-9.-]/g, '') || 0)) / anchoImg;
-            let nuevaPos = posActual + sentido;
-
-            if(nuevaPos < 0) nuevaPos = totalImagenes - 1;
-            if(nuevaPos >= totalImagenes) nuevaPos = 0;
-
-            pista.style.transform = `translateX(-${nuevaPos * anchoImg}px)`;
-            Array.from(puntos).forEach((punto, indice) => punto.classList.toggle('activo', indice === nuevaPos));
-        }
-
-        function limpiarFormulario() {
-            ['campoNombreMapa','campoDatosTecnicos','campoEnlaceDescarga','campoArchivosImagenes'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
-        }
-
-        window.addEventListener('click', (e) => {
-            if(e.target === document.getElementById('modalAcceso')) cerrarModalClave();
-            if(e.target === document.getElementById('panelAdmin')) cerrarPanel();
-        });
-    </script>
-</body>
-</html>
+        // 💾 Guardar datos en la nube
+         async function guardarDatosEnNube() {
+             try {
+                 await fetch(DB_URL, {
+                     method: "PUT",
+                     headers: {
+                         "Content-Type": "application/json",
+                         "X-Master-Key": DB_KEY
+                     },
+                     body: JSON.stringify({
+                         config: configuracion,
+                         proyectos: misProyectos
+                     })
+                 });
+                 return true;
+             } catch (err) {
+                 alert("❌ Error al guardar, intenta nuevamente");
+                 return false;
+             }
+         }
+         function cambiarVistaClave(idCampo, boton) {
+             const campo = document.getElementById(idCampo);
+             const icono = boton.querySelector('i');
+             campo.type = campo.type === 'password' ? 'text' : 'password';
+             icono.className = campo.type === 'password' ? 'fa fa-eye-slash' : 'fa fa-eye';
+         }
+         function validarClave() {
+             const claveIngresada = document.getElementById('claveIngreso').value.trim();
+             if(claveIngresada === configuracion.clave){
+                 cerrarModalClave();
+                 document.getElementById('panelAdmin').classList.remove('oculto');
+                 document.getElementById('editarNombrePerfil').value = configuracion.nombre;
+                 document.getElementById('nuevaClaveNueva').value = configuracion.clave;
+             } else {
+                 alert('❌ Contraseña incorrecta');
+                 document.getElementById('claveIngreso').value = '';
+             }
+         }
+         function cerrarModalClave() { 
+             document.getElementById('modalAcceso').classList.add('oculto'); 
+             document.getElementById('claveIngreso').value = '';
+         }
+         function cerrarPanel() { 
+             document.getElementById('panelAdmin').classList.add('oculto'); 
+         }
+         async function guardarNuevaClave() {
+             const nuevoNombre = document.getElementById('editarNombrePerfil').value.trim() || "Constructor Profesional";
+             const nuevaClave = document.getElementById('nuevaClaveNueva').value.trim();
+             
+             configuracion.nombre = nuevoNombre;
+             if(nuevaClave) configuracion.clave = nuevaClave;
+             
+             const guardado = await guardarDatosEnNube();
+             if(guardado) {
+                 document.getElementById('nombreConstructor').textContent = nuevoNombre;
+                 alert('✅ Configuración guardada correctamente');
+             }
+         }
+         async function agregarProyecto() {
+             const nombresArchivos = document.getElementById('campoArchivosImagenes').value
+                 .split(',')
+                 .map(nombre => nombre.trim())
+                 .filter(nombre => nombre);
+             
+             if(nombresArchivos.length === 0) return alert('⚠️ Agrega al menos una imagen');
+             
+             const rutasCompletas = nombresArchivos.map(nombre => `imagenes/${nombre}`);
+             const datos = {
+                 id: Date.now(),
+                 nombre: document.getElementById('campoNombreMapa').value.trim(),
+                 ficha: document.getElementById('campoDatosTecnicos').value.trim(),
+                 descarga: document.getElementById('campoEnlaceDescarga').value.trim(),
+                 imagenes: rutasCompletas
+             };
+             if(!datos.nombre || !datos.descarga) return alert('⚠️ Completa el nombre y el enlace de descarga');
+             
+             misProyectos.unshift(datos);
+             const guardado = await guardarDatosEnNube();
+             if(guardado) {
+                 actualizarVistaGeneral();
+                 limpiarFormulario();
+                 alert('✅ Proyecto publicado! Todos lo verán al instante');
+             }
+         }
+         async function borrarProyecto(id) {
+             if(confirm('¿Eliminar este mapa? No se puede deshacer')){
+                 misProyectos = misProyectos.filter(p => p.id !== id);
+                 await guardarDatosEnNube();
+                 actualizarVistaGeneral();
+             }
+         }
+         function actualizarVistaGeneral() {
+             const contenedor = document.getElementById('contenedorProyectos');
+             const avisoVacio = document.getElementById('sinMapas');
+             contenedor.innerHTML = '';
+             if(misProyectos.length === 0){ 
+                 avisoVacio.classList.remove('oculto'); 
+                 document.getElementById('listaEliminar').innerHTML = '';
+                 return; 
+             }
+             avisoVacio.classList.add('oculto');
+             misProyectos.forEach((proyecto, indice) => {
+                 const tarjeta = document.createElement('article');
+                 tarjeta.className = 'bg-mc-medio rounded-lg overflow-hidden shadow-lujo anim-entrada border border-mc-bloque/20';
+                 tarjeta.style.animationDelay = `${indice * 0.18}s`;
+                 tarjeta.innerHTML = `
+                 <div class="contenedor-galeria">
+                     <div class="pista-imagenes" id="pista-${proyecto.id}">
+                         ${proyecto.imagenes.map(url => 
+                             `<img src="${url}" alt="${proyecto.nombre}" class="img-mapa" 
+                              onerror="this.src='https://via.placeholder.com/600x400?text=Imagen+no+encontrada'">`
+                         ).join('')}
+                     </div>
+                     ${proyecto.imagenes.length > 1 ? `
+                         <button class="btn-flecha left-2" onclick="desplazarGaleria(${proyecto.id}, -1)">‹</button>
+                         <button class="btn-flecha right-2" onclick="desplazarGaleria(${proyecto.id}, 1)">›</button>
+                         <div class="indicadores" id="puntos-${proyecto.id}">
+                             ${proyecto.imagenes.map((_,i)=>`<span class="punto ${i===0?'activo':''}"></span>`).join('')}
+                         </div>
+                     ` : ''}
+                 </div>
+                 <div class="p-7">
+                     <h3 class="text-2xl font-bold text-center text-mc-dorado mb-5 resaltado font-minecraft">${proyecto.nombre}</h3>
+                     <div class="mb-6">
+                         ${proyecto.ficha.split('\n').filter(linea => linea.trim()).map(linea => 
+                             `<div class="etiqueta-dato">${linea}</div>`
+                         ).join('')}
+                     </div>
+                     <a href="${proyecto.descarga}" target="_blank" rel="noopener noreferrer" class="btn-descargar block text-center py-3.5 rounded-lg text-white font-bold text-lg">
+                         <i class="fa fa-download mr-2"></i> OBTENER MAPA
+                     </a>
+                 </div>`;
+                 contenedor.appendChild(tarjeta);
+             });
+             const listaBorrar = document.getElementById('listaEliminar'); 
+             listaBorrar.innerHTML = '<h4 class="text-sm font-semibold text-gray-300 mb-2">Proyectos guardados:</h4>';
+             misProyectos.forEach(p => {
+                 listaBorrar.innerHTML += `
+                     <div class="bg-mc-fondo p-3 rounded flex justify-between items-center border border-mc-bloque/20">
+                         <span class="text-sm font-medium">${p.nombre}</span>
+                         <button onclick="borrarProyecto(${p.id})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-medium transition-colors">Eliminar</button>
+                     </div>`;
+             });
+         }
+         function desplazarGaleria(id, sentido) {
+             const pista = document.getElementById(`pista-${id}`);
+             const puntos = document.getElementById(`puntos-${id}`)?.children || [];
+             const anchoImg = pista.firstElementChild?.clientWidth || 0;
+             const totalImagenes = pista.children.length;
+             
+             if(anchoImg === 0 || totalImagenes <= 1) return;
+             let posActual = Math.abs(parseFloat(pista.style.transform?.replace(/[^0-9.-]/g, '') || 0)) / anchoImg;
+             let nuevaPos = posActual + sentido;
+             if(nuevaPos < 0) nuevaPos = totalImagenes - 1;
+             if(nuevaPos >= totalImagenes) nuevaPos = 0;
+             pista.style.transform = `translateX(-${nuevaPos * anchoImg}px)`;
+             Array.from(puntos).forEach((punto, indice) => punto.classList.toggle('activo', indice === nuevaPos));
+         }
+         function limpiarFormulario() {
+             ['campoNombreMapa','campoDatosTecnicos','campoEnlaceDescarga','campoArchivosImagenes'].forEach(id => {
+                 document.getElementById(id).value = '';
+             });
+         }
+         window.addEventListener('click', (e) => {
+             if(e.target === document.getElementById('modalAcceso')) cerrarModalClave();
+             if(e.target === document.getElementById('panelAdmin')) cerrarPanel();
+         });
+     </script>
+ </body>
+ </html>
