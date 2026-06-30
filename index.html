@@ -23,7 +23,8 @@
                             tarjeta: '#2D2D2D',
                             texto: '#E5E7EB',
                             bloque: '#8B6A4F',
-                            pasto: '#548C2F'
+                            pasto: '#548C2F',
+                            plugin: '#9333EA'
                         }
                     },
                     fontFamily: {
@@ -145,11 +146,19 @@
             transition: all 0.25s ease;
             box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
         }
+        .etiqueta-dato.plugin {
+            background: rgba(147, 51, 234, 0.08); 
+            border-left-color: #9333EA;
+            box-shadow: inset 0 0 0 1px rgba(147, 51, 234, 0.15);
+        }
         .etiqueta-dato:hover { 
             transform: translateX(6px); 
             background: rgba(59, 130, 246, 0.15); 
             border-left-color: #FBBF24; 
             box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.25);
+        }
+        .etiqueta-dato.plugin:hover {
+            background: rgba(147, 51, 234, 0.15);
         }
 
         .btn-descargar {
@@ -191,6 +200,33 @@
             border-color: #FBBF24 !important;
             box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
         }
+
+        /* Pestañas de navegación */
+        .pestanas {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .pestana {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .pestana.activa {
+            background: #3B82F6;
+            border-color: #3B82F6;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+        }
+        .pestana#tabPlugins.activa {
+            background: #9333EA;
+            border-color: #9333EA;
+            box-shadow: 0 0 12px rgba(147, 51, 234, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -218,20 +254,47 @@
     </header>
 
     <main class="max-w-4xl mx-auto px-4 py-12">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold mb-3 font-minecraft text-mc-dorado">Mis Proyectos Realizados</h2>
-            <p class="text-gray-300 text-lg">Explora y descarga los mejores mapa para tu servidor  </p>
-            <p class="text-gray-300 text-lg">———————————</p>
-            <p class="text-gray-300 text-lg">Algunos Mapas No son mios !!</p>
+        <!-- Navegación entre secciones -->
+        <div class="pestanas">
+            <div id="tabMapas" class="pestana activa" onclick="cambiarSeccion('mapas')">🗺️ Lobbys</div>
+            <div id="tabPlugins" class="pestana" onclick="cambiarSeccion('plugins')">🧩 Plugins</div>
         </div>
 
-        <div id="sinMapas" class="text-center py-24 text-gray-500 anim-entrada">
-            <i class="fa fa-cubes text-7xl mb-6 text-mc-principal/40"></i>
-            <p class="text-2xl font-minecraft">Aún no has publicado ningún proyecto</p>
-            <p class="text-gray-400 mt-2">Cuando agregues mapas aparecerán aquí</p>
+        <!-- Sección Mapas -->
+        <div id="seccionMapas">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-3 font-minecraft text-mc-dorado">Mis Proyectos Realizados</h2>
+                <p class="text-gray-300 text-lg">Explora y descarga los mejores mapas para tu servidor</p>
+                <p class="text-gray-300 text-lg">————————</p>
+                <p class="text-gray-300 text-lg">Algunos Mapas No son mios !!</p>
+            </div>
+
+            <div id="sinMapas" class="text-center py-24 text-gray-500 anim-entrada">
+                <i class="fa fa-cubes text-7xl mb-6 text-mc-principal/40"></i>
+                <p class="text-2xl font-minecraft">Aún no has publicado ningún proyecto</p>
+                <p class="text-gray-400 mt-2">Cuando agregues mapas aparecerán aquí</p>
+            </div>
+
+            <div id="contenedorProyectos" class="space-y-14"></div>
         </div>
 
-        <div id="contenedorProyectos" class="space-y-14"></div>
+        <!-- Sección Plugins -->
+        <div id="seccionPlugins" class="oculto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-3 font-minecraft text-mc-dorado">Plugins Disponibles</h2>
+                <p class="text-gray-300 text-lg">Complementos optimizados para mejorar tu servidor</p>
+                <p class="text-gray-300 text-lg">————————</p>
+                <p class="text-gray-300 text-lg">Son Plugins Publicos</p>
+            </div>
+
+            <div id="sinPlugins" class="text-center py-24 text-gray-500 anim-entrada">
+                <i class="fa fa-puzzle-piece text-7xl mb-6 text-mc-plugin/40"></i>
+                <p class="text-2xl font-minecraft">Aún no has agregado ningún plugin</p>
+                <p class="text-gray-400 mt-2">Cuando los agregues aparecerán aquí</p>
+            </div>
+
+            <div id="contenedorPlugins" class="space-y-10"></div>
+        </div>
     </main>
 
     <div id="modalAcceso" class="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 oculto">
@@ -257,7 +320,7 @@
     <div id="panelAdmin" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 z-50 oculto">
         <div class="bg-mc-medio rounded-lg w-full max-w-lg max-h-[94vh] overflow-y-auto p-6 shadow-2xl border-2 border-mc-dorado/20">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-mc-dorado font-minecraft">⚙️ Zona de Constructor</h2>
+                <h2 class="text-2xl font-bold text-mc-dorado font-minecraft">⚙️ Zona de Administración</h2>
                 <button onclick="cerrarPanel()" class="text-gray-400 hover:text-white text-3xl transition-colors">&times;</button>
             </div>
 
@@ -283,233 +346,320 @@
                 </div>
             </div>
 
+            <!-- Agregar Mapa -->
             <div class="bg-mc-fondo rounded-md p-5 mb-5 border border-mc-bloque/20">
-                <h3 class="font-semibold mb-4 text-mc-exito text-lg font-minecraft">➕ Agregar Nuevo Mapa</h3>
+                <h3 class="font-semibold mb-4 text-mc-exito text-lg font-minecraft">➕ Agregar Nuevo Mapa / Lobby</h3>
                 
                 <input type="text" id="campoNombreMapa" placeholder="Nombre del mapa" 
                        class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-4">
 
-                <textarea id="campoDatosTecnicos" rows="5" placeholder="Ejemplo:
+                <textarea id="campoDatosTecnicos" rows="4" placeholder="Ejemplo:
 • Dimensiones: 200x200 bloques
 • Versión: 1.20+
-• Estilo: Castillo medieval
-• Zonas: Almacén, Torre, Patio"
+• Estilo: Castillo medieval"
                 class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-4"></textarea>
 
                 <input type="text" id="campoEnlaceDescarga" placeholder="Enlace de descarga (.zip / .mcworld)" 
                        class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-4">
 
-                <input type="text" id="campoArchivosImagenes" placeholder="Archivos: castillo1.jpg, castillo2.jpg, etc." 
+                <input type="text" id="campoArchivosImagenes" placeholder="Archivos: castillo1.jpg, castillo2.jpg" 
                        class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-5">
 
-                <button onclick="agregarProyecto()" class="w-full bg-mc-exito hover:bg-green-600 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-[1.02]">
-                    🚀 Publicar Proyecto
+                <button onclick="agregarProyecto()" class="w-full bg-mc-exito hover:bg-green-600 py-2.5 rounded-lg font-semibold transition-all hover:scale-[1.02]">
+                    🚀 Publicar Mapa
                 </button>
             </div>
 
-            <div id="listaEliminar" class="space-y-3 mt-4"></div>
+            <!-- Agregar Plugin -->
+            <div class="bg-mc-fondo rounded-md p-5 mb-5 border border-mc-bloque/20">
+                <h3 class="font-semibold mb-4 text-mc-plugin text-lg font-minecraft">🧩 Agregar Nuevo Plugin</h3>
+                
+                <input type="text" id="campoNombrePlugin" placeholder="Nombre del plugin" 
+                       class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-4">
+
+                <textarea id="campoDescripcionPlugin" rows="4" placeholder="Ejemplo:
+• Versión compatible: 1.20 - 1.21
+• Función: Protección de zonas
+• Características: Permisos, configuración sencilla
+• Requisitos: Java 17+"
+                class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-4"></textarea>
+
+                <input type="text" id="campoEnlacePlugin" placeholder="Enlace de descarga (.jar / .zip)" 
+                       class="w-full bg-mc-medio border border-gray-700 rounded-md px-3 py-2.5 mb-5">
+
+                <button onclick="agregarPlugin()" class="w-full bg-mc-plugin hover:bg-purple-700 py-2.5 rounded-lg font-semibold transition-all hover:scale-[1.02]">
+                    🚀 Publicar Plugin
+                </button>
+            </div>
+
+            <!-- Lista para eliminar elementos -->
+            <div id="listaEliminar" class="space-y-3 mt-4 p-3 bg-mc-fondo rounded-md border border-mc-bloque/20"></div>
         </div>
     </div>
 
     <script>
-        // 🗄️ BASE DE DATOS ACTIVA Y FUNCIONANDO
-        const DB_URL = "https://api.jsonbin.io/v3/b/6a4314dada38895dfe132a73";
-        const DB_KEY = "$2a$10$GoMZ7fmCWtwPUCyqDnJpKOi61PmNOBchOJniztaeL3EbjLMfujLMO";
+// 🗄️ BASE DE DATOS ÚNICA
+const DB_URL = "https://api.jsonbin.io/v3/b/6a4314dada38895dfe132a73";
+const DB_KEY = "$2a$10$GoMZ7fmCWtwPUCyqDnJpKOi61PmNOBchOJniztaeL3EbjLMfujLMO";
 
-        let configuracion = { clave: "mcpro2026", nombre: "Constructor Profesional" };
-        let misProyectos = [];
+// ✅ CONTRASEÑA: mc2026seguro
+let configuracion = { clave: "mc2026seguro", nombre: "Constructor Profesional" };
+let misProyectos = [];
+let misPlugins = [];
 
-        // 🚀 Cargar datos al abrir la página
-        document.addEventListener('DOMContentLoaded', () => {
-            cargarDatos();
-            document.getElementById('btnAdmin').addEventListener('click', () => {
-                document.getElementById('modalAcceso').classList.remove('oculto');
-            });
-        });
+// 🚀 Cargar datos al iniciar
+document.addEventListener('DOMContentLoaded', () => {
+    cargarDatos();
+    document.getElementById('btnAdmin').addEventListener('click', () => {
+        document.getElementById('modalAcceso').classList.remove('oculto');
+    });
+});
 
-        // 📥 Leer datos desde la nube
-        async function cargarDatos() {
-            try {
-                const res = await fetch(DB_URL, {
-                    headers: { "X-Master-Key": DB_KEY }
-                });
-                const datos = await res.json();
-                if (datos.record) {
-                    configuracion = datos.record.config || configuracion;
-                    misProyectos = datos.record.proyectos || [];
-                }
-            } catch (err) {
-                console.log("Primera vez, iniciando vacío");
-                await guardarDatos();
-            }
-            document.getElementById('nombreConstructor').textContent = configuracion.nombre;
-            actualizarVista();
-        }
-
-          // 💾 Guardar datos en la nube
-         async function guardarDatos() {
+// 📥 Leer datos
+async function cargarDatos() {
     try {
-        await fetch(DB_URL, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Master-Key": DB_KEY,
-                "X-Bin-Versioning": "false"
-            },
-            body: JSON.stringify({
-                config: configuracion,
-                proyectos: misProyectos
-            })
-        });
-        return true;
+        const res = await fetch(DB_URL, { headers: { "X-Master-Key": DB_KEY } });
+        const datos = await res.json();
+        if (datos.record) {
+            configuracion = datos.record.config || configuracion;
+            misProyectos = datos.record.proyectos || [];
+            misPlugins = datos.record.plugins || [];
+        }
     } catch (err) {
-        alert("❌ No se pudo guardar. Revisa tu conexión.");
-        return false;
+        console.log("Iniciando nueva base de datos");
+        await guardarDatos();
     }
+    document.getElementById('nombreConstructor').textContent = configuracion.nombre;
+    actualizarVistaMapas();
+    actualizarVistaPlugins();
+    actualizarListaEliminar(); // ✅ Actualizar lista de borrado al cargar
 }
-         function cambiarVistaClave(idCampo, boton) {
-             const campo = document.getElementById(idCampo);
-             const icono = boton.querySelector('i');
-             campo.type = campo.type === 'password' ? 'text' : 'password';
-             icono.className = campo.type === 'password' ? 'fa fa-eye-slash' : 'fa fa-eye';
-         }
-         function validarClave() {
-             const claveIngresada = document.getElementById('claveIngreso').value.trim();
-             if(claveIngresada === configuracion.clave){
-                 cerrarModalClave();
-                 document.getElementById('panelAdmin').classList.remove('oculto');
-                 document.getElementById('editarNombrePerfil').value = configuracion.nombre;
-                 document.getElementById('nuevaClaveNueva').value = configuracion.clave;
-             } else {
-                 alert('❌ Contraseña incorrecta');
-                 document.getElementById('claveIngreso').value = '';
-             }
-         }
-         function cerrarModalClave() { 
-             document.getElementById('modalAcceso').classList.add('oculto'); 
-             document.getElementById('claveIngreso').value = '';
-         }
-         function cerrarPanel() { 
-             document.getElementById('panelAdmin').classList.add('oculto'); 
-         }
-         async function guardarConfiguracion() {
-             const nuevoNombre = document.getElementById('editarNombrePerfil').value.trim() || "Constructor Profesional";
-             const nuevaClave = document.getElementById('nuevaClaveNueva').value.trim();
-             
-             configuracion.nombre = nuevoNombre;
-             if(nuevaClave) configuracion.clave = nuevaClave;
-             
-             const ok = await guardarDatos();
-             if(ok) {
-                 document.getElementById('nombreConstructor').textContent = nuevoNombre;
-                 alert('✅ Cambios guardados correctamente');
-             }
-         }
-         async function agregarProyecto() {
-             const nombres = document.getElementById('campoArchivosImagenes').value
-                 .split(',')
-                 .map(n => n.trim())
-                 .filter(n => n);
-             
-             if(nombres.length === 0) return alert('⚠️ Pon al menos una imagen');
-             
-             const imagenes = nombres.map(n => `imagenes/${n}`);
-             const nuevo = {
-                 id: Date.now(),
-                 nombre: document.getElementById('campoNombreMapa').value.trim(),
-                 ficha: document.getElementById('campoDatosTecnicos').value.trim(),
-                 descarga: document.getElementById('campoEnlaceDescarga').value.trim(),
-                 imagenes: imagenes
-             };
-             if(!nuevo.nombre || !nuevo.descarga) return alert('⚠️ Completa todos los campos obligatorios');
-             
-             misProyectos.unshift(nuevo);
-             const ok = await guardarDatos();
-             if(ok) {
-                 actualizarVista();
-                 limpiarFormulario();
-                 alert('✅ Proyecto publicado! Ya lo ven todos');
-             }
-         }
-         async function borrarProyecto(id) {
-             if(confirm('¿Eliminar este proyecto? No se puede deshacer')){
-                 misProyectos = misProyectos.filter(p => p.id !== id);
-                 await guardarDatos();
-                 actualizarVista();
-             }
-         }
-         function actualizarVista() {
-             const contenedor = document.getElementById('contenedorProyectos');
-             const vacio = document.getElementById('sinMapas');
-             contenedor.innerHTML = '';
-             if(misProyectos.length === 0){ 
-                 vacio.classList.remove('oculto'); 
-                 document.getElementById('listaEliminar').innerHTML = '';
-                 return; 
-             }
-             vacio.classList.add('oculto');
-             misProyectos.forEach((proy, i) => {
-                 const tarjeta = document.createElement('article');
-                 tarjeta.className = 'bg-mc-medio rounded-lg overflow-hidden shadow-lujo anim-entrada border border-mc-bloque/20';
-                 tarjeta.style.animationDelay = `${i * 0.18}s`;
-                 tarjeta.innerHTML = `
-                 <div class="contenedor-galeria">
-                     <div class="pista-imagenes" id="pista-${proy.id}">
-                         ${proy.imagenes.map(url => 
-                             `<img src="${url}" alt="${proy.nombre}" class="img-mapa" 
-                              onerror="this.src='https://via.placeholder.com/600x400?text=Imagen+no+encontrada'">`
-                         ).join('')}
-                     </div>
-                     ${proy.imagenes.length > 1 ? `
-                         <button class="btn-flecha left-2" onclick="desplazar(${proy.id}, -1)">‹</button>
-                         <button class="btn-flecha right-2" onclick="desplazar(${proy.id}, 1)">›</button>
-                         <div class="indicadores" id="puntos-${proy.id}">
-                             ${proy.imagenes.map((_,x)=>`<span class="punto ${x===0?'activo':''}"></span>`).join('')}
-                         </div>
-                     ` : ''}
-                 </div>
-                 <div class="p-7">
-                     <h3 class="text-2xl font-bold text-center text-mc-dorado mb-5 resaltado font-minecraft">${proy.nombre}</h3>
-                     <div class="mb-6">
-                         ${proy.ficha.split('\n').filter(l => l.trim()).map(l => `<div class="etiqueta-dato">${l}</div>`).join('')}
-                     </div>
-                     <a href="${proy.descarga}" target="_blank" rel="noopener noreferrer" class="btn-descargar block text-center py-3.5 rounded-lg text-white font-bold text-lg">
-                         <i class="fa fa-download mr-2"></i> OBTENER MAPA
-                     </a>
-                 </div>`;
-                 contenedor.appendChild(tarjeta);
-             });
-             const lista = document.getElementById('listaEliminar'); 
-             lista.innerHTML = '<h4 class="text-sm font-semibold text-gray-300 mb-2">Proyectos:</h4>';
-             misProyectos.forEach(p => {
-                 lista.innerHTML += `
-                     <div class="bg-mc-fondo p-3 rounded flex justify-between items-center border border-mc-bloque/20">
-                         <span class="text-sm font-medium">${p.nombre}</span>
-                         <button onclick="borrarProyecto(${p.id})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">Eliminar</button>
-                     </div>`;
-             });
-         }
-         function desplazar(id, sentido) {
-             const pista = document.getElementById(`pista-${id}`);
-             const puntos = document.getElementById(`puntos-${id}`)?.children || [];
-             const ancho = pista.firstElementChild?.clientWidth || 0;
-             const total = pista.children.length;
-             
-             if(ancho === 0 || total <= 1) return;
-             let pos = Math.abs(parseFloat(pista.style.transform?.replace(/[^0-9.-]/g, '') || 0)) / ancho;
-             pos = (pos + sentido + total) % total;
-             pista.style.transform = `translateX(-${pos * ancho}px)`;
-             Array.from(puntos).forEach((p, i) => p.classList.toggle('activo', i === pos));
-         }
-         function limpiarFormulario() {
-             ['campoNombreMapa','campoDatosTecnicos','campoEnlaceDescarga','campoArchivosImagenes'].forEach(id => {
-                 document.getElementById(id).value = '';
-             });
-         }
-         window.addEventListener('click', (e) => {
-             if(e.target === document.getElementById('modalAcceso')) cerrarModalClave();
-             if(e.target === document.getElementById('panelAdmin')) cerrarPanel();
+
+// 💾 Guardar datos
+ async function guardarDatos() {
+     try {
+         await fetch(DB_URL, {
+             method: "PUT",
+             headers: {
+                 "Content-Type": "application/json",
+                 "X-Master-Key": DB_KEY,
+             },
+             body: JSON.stringify({
+                 config: configuracion,
+                 proyectos: misProyectos,
+                 plugins: misPlugins
+             })
          });
+         return true;
+     } catch (err) {
+         console.error("Error al guardar:", err);
+         return false;
+     }
+ }
+ // Cambiar entre secciones
+ function cambiarSeccion(seccion) {
+     document.getElementById('seccionMapas').classList.toggle('oculto', seccion !== 'mapas');
+     document.getElementById('seccionPlugins').classList.toggle('oculto', seccion !== 'plugins');
+     document.getElementById('tabMapas').classList.toggle('activa', seccion === 'mapas');
+     document.getElementById('tabPlugins').classList.toggle('activa', seccion === 'plugins');
+ }
+ function cambiarVistaClave(idCampo, boton) {
+     const campo = document.getElementById(idCampo);
+     const icono = boton.querySelector('i');
+     campo.type = campo.type === 'password' ? 'text' : 'password';
+     icono.className = campo.type === 'password' ? 'fa fa-eye-slash' : 'fa fa-eye';
+ }
+ function validarClave() {
+     const claveIngresada = document.getElementById('claveIngreso').value.trim();
+     if(claveIngresada === configuracion.clave){
+         cerrarModalClave();
+         document.getElementById('panelAdmin').classList.remove('oculto');
+         document.getElementById('editarNombrePerfil').value = configuracion.nombre;
+         document.getElementById('nuevaClaveNueva').value = configuracion.clave;
+         actualizarListaEliminar(); // ✅ Cargar lista de borrado al abrir panel
+     } else {
+         document.getElementById('claveIngreso').value = '';
+     }
+ }
+ function cerrarModalClave() { 
+     document.getElementById('modalAcceso').classList.add('oculto'); 
+     document.getElementById('claveIngreso').value = '';
+ }
+ function cerrarPanel() { 
+     document.getElementById('panelAdmin').classList.add('oculto'); 
+ }
+ async function guardarConfiguracion() {
+     const nuevoNombre = document.getElementById('editarNombrePerfil').value.trim() || "Constructor Profesional";
+     const nuevaClave = document.getElementById('nuevaClaveNueva').value.trim();
+     
+     configuracion.nombre = nuevoNombre;
+     if(nuevaClave) configuracion.clave = nuevaClave;
+     
+     await guardarDatos();
+     document.getElementById('nombreConstructor').textContent = nuevoNombre;
+ }
+ // ---------------------- MAPAS ----------------------
+ async function agregarProyecto() {
+     const nombres = document.getElementById('campoArchivosImagenes').value
+         .split(',').map(n => n.trim()).filter(n => n);
+     
+     if(nombres.length === 0) return;
+     
+     const nuevo = {
+         id: Date.now(),
+         nombre: document.getElementById('campoNombreMapa').value.trim(),
+         ficha: document.getElementById('campoDatosTecnicos').value.trim(),
+         descarga: document.getElementById('campoEnlaceDescarga').value.trim(),
+         imagenes: nombres.map(n => `imagenes/${n}`)
+     };
+     if(!nuevo.nombre || !nuevo.descarga) return;
+     
+     misProyectos.unshift(nuevo);
+     await guardarDatos();
+     actualizarVistaMapas();
+     limpiarFormularios();
+     actualizarListaEliminar(); // ✅ Actualizar lista después de agregar
+ }
+ async function borrarProyecto(id) {
+     if(confirm('¿Eliminar este mapa? No se puede deshacer')){
+         misProyectos = misProyectos.filter(p => p.id !== id);
+         await guardarDatos();
+         actualizarVistaMapas();
+         actualizarListaEliminar(); // ✅ Actualizar lista después de borrar
+     }
+ }
+ function actualizarVistaMapas() {
+     const contenedor = document.getElementById('contenedorProyectos');
+     const vacio = document.getElementById('sinMapas');
+     contenedor.innerHTML = '';
+     if(misProyectos.length === 0) { vacio.classList.remove('oculto'); return; }
+     vacio.classList.add('oculto');
+     misProyectos.forEach((proy, i) => {
+         const tarjeta = document.createElement('article');
+         tarjeta.className = 'bg-mc-medio rounded-lg overflow-hidden shadow-lujo anim-entrada border border-mc-bloque/20';
+         tarjeta.style.animationDelay = `${i * 0.18}s`;
+         tarjeta.innerHTML = `
+         <div class="contenedor-galeria">
+             <div class="pista-imagenes" id="pista-${proy.id}">
+                 ${proy.imagenes.map(url => 
+                     `<img src="${url}" alt="${proy.nombre}" class="img-mapa" 
+                      onerror="this.src='https://via.placeholder.com/600x400?text=Imagen+no+encontrada'">`
+                 ).join('')}
+             </div>
+             ${proy.imagenes.length > 1 ? `
+                 <button class="btn-flecha left-2" onclick="desplazar(${proy.id}, -1)">‹</button>
+                 <button class="btn-flecha right-2" onclick="desplazar(${proy.id}, 1)">›</button>
+                 <div class="indicadores" id="puntos-${proy.id}">
+                     ${proy.imagenes.map((_,x)=>`<span class="punto ${x===0?'activo':''}"></span>`).join('')}
+                 </div>
+             ` : ''}
+         </div>
+         <div class="p-7">
+             <h3 class="text-2xl font-bold text-center text-mc-dorado mb-5 resaltado font-minecraft">${proy.nombre}</h3>
+             <div class="mb-6">
+                 ${proy.ficha.split('\n').filter(l => l.trim()).map(l => `<div class="etiqueta-dato">${l}</div>`).join('')}
+             </div>
+             <a href="${proy.descarga}" target="_blank" rel="noopener noreferrer" class="btn-descargar block text-center py-3.5 rounded-lg text-white font-bold text-lg">
+                 <i class="fa fa-download mr-2"></i> OBTENER MAPA
+             </a>
+         </div>`;
+         contenedor.appendChild(tarjeta);
+     });
+ }
+ function desplazar(id, sentido) {
+     const pista = document.getElementById(`pista-${id}`);
+     const puntos = document.getElementById(`puntos-${id}`)?.children || [];
+     const ancho = pista.firstElementChild?.clientWidth || 0;
+     const total = pista.children.length;
+     if(ancho === 0 || total <= 1) return;
+     let pos = Math.abs(parseFloat(pista.style.transform?.replace(/[^0-9.-]/g, '') || 0)) / ancho;
+     pos = (pos + sentido + total) % total;
+     pista.style.transform = `translateX(-${pos * ancho}px)`;
+     Array.from(puntos).forEach((p, i) => p.classList.toggle('activo', i === pos));
+ }
+ // ---------------------- PLUGINS ----------------------
+ async function agregarPlugin() {
+     const nuevo = {
+         id: Date.now(),
+         nombre: document.getElementById('campoNombrePlugin').value.trim(),
+         descripcion: document.getElementById('campoDescripcionPlugin').value.trim(),
+         descarga: document.getElementById('campoEnlacePlugin').value.trim()
+     };
+     if(!nuevo.nombre || !nuevo.descripcion || !nuevo.descarga) return;
+     
+     misPlugins.unshift(nuevo);
+     await guardarDatos();
+     actualizarVistaPlugins();
+     limpiarFormularios();
+     actualizarListaEliminar(); // ✅ Actualizar lista después de agregar
+ }
+ async function borrarPlugin(id) {
+     if(confirm('¿Eliminar este plugin? No se puede deshacer')){
+         misPlugins = misPlugins.filter(p => p.id !== id);
+         await guardarDatos();
+         actualizarVistaPlugins();
+         actualizarListaEliminar(); // ✅ Actualizar lista después de borrar
+     }
+ }
+ function actualizarVistaPlugins() {
+     const contenedor = document.getElementById('contenedorPlugins');
+     const vacio = document.getElementById('sinPlugins');
+     contenedor.innerHTML = '';
+     if(misPlugins.length === 0) { vacio.classList.remove('oculto'); return; }
+     vacio.classList.add('oculto');
+     misPlugins.forEach((plugin, i) => {
+         const tarjeta = document.createElement('article');
+         tarjeta.className = 'bg-mc-medio rounded-lg overflow-hidden shadow-lujo anim-entrada border border-mc-bloque/20';
+         tarjeta.style.animationDelay = `${i * 0.18}s`;
+         tarjeta.innerHTML = `
+         <div class="p-7">
+             <h3 class="text-2xl font-bold text-center text-mc-dorado mb-5 resaltado font-minecraft">${plugin.nombre}</h3>
+             <div class="mb-6">
+                 ${plugin.descripcion.split('\n').filter(l => l.trim()).map(l => `<div class="etiqueta-dato plugin">${l}</div>`).join('')}
+             </div>
+             <a href="${plugin.descarga}" target="_blank" rel="noopener noreferrer" class="btn-descargar block text-center py-3.5 rounded-lg text-white font-bold text-lg">
+                 <i class="fa fa-download mr-2"></i> DESCARGAR PLUGIN
+             </a>
+         </div>`;
+         contenedor.appendChild(tarjeta);
+     });
+ }
+ // ✅ FUNCIÓN CORREGIDA: Ahora sí muestra mapas Y plugins
+ function actualizarListaEliminar() {
+     const lista = document.getElementById('listaEliminar'); 
+     lista.innerHTML = '<h4 class="text-sm font-semibold text-gray-300 mb-3">🗑️ Elementos publicados:</h4>';
+     
+     if(misProyectos.length === 0 && misPlugins.length === 0) {
+         lista.innerHTML += '<p class="text-xs text-gray-400 italic">Aún no has agregado nada</p>';
+         return;
+     }
+     // Agregar mapas
+     misProyectos.forEach(p => {
+         lista.innerHTML += `
+             <div class="bg-mc-medio p-2.5 rounded flex justify-between items-center border border-mc-bloque/20 mb-2">
+                 <span class="text-sm">🗺 ${p.nombre}</span>
+                 <button onclick="borrarProyecto(${p.id})" class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs text-white">Eliminar</button>
+             </div>`;
+     });
+     // Agregar plugins
+     misPlugins.forEach(p => {
+         lista.innerHTML += `
+             <div class="bg-mc-medio p-2.5 rounded flex justify-between items-center border border-mc-bloque/20 mb-2">
+                 <span class="text-sm">🧩 ${p.nombre}</span>
+                 <button onclick="borrarPlugin(${p.id})" class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs text-white">Eliminar</button>
+             </div>`;
+     });
+ }
+ function limpiarFormularios() {
+     ['campoNombreMapa','campoDatosTecnicos','campoEnlaceDescarga','campoArchivosImagenes',
+      'campoNombrePlugin','campoDescripcionPlugin','campoEnlacePlugin'].forEach(id => {
+         document.getElementById(id).value = '';
+     });
+ }
+ window.addEventListener('click', (e) => {
+     if(e.target === document.getElementById('modalAcceso')) cerrarModalClave();
+     if(e.target === document.getElementById('panelAdmin')) cerrarPanel();
+ });
      </script>
  </body>
  </html>
